@@ -1,0 +1,65 @@
+services:
+  web:
+    build:
+      context: .
+    image: x5-milk:local
+    container_name: x5-milk-web
+    env_file: .env
+    environment:
+      DATABASE_URL: sqlite:////data/store.db
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - store-data:/data
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    init: true
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=4)"
+      interval: 30s
+      timeout: 6s
+      retries: 3
+      start_period: 20s
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  bot:
+    image: x5-milk:local
+    container_name: x5-milk-bot
+    env_file: .env
+    environment:
+      DATABASE_URL: sqlite:////data/store.db
+    command: ["python", "-m", "app.bot"]
+    volumes:
+      - store-data:/data
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      web:
+        condition: service_healthy
+    restart: unless-stopped
+    init: true
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+
+volumes:
+  store-data:

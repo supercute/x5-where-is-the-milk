@@ -1,0 +1,11 @@
+# Optional local inference for Qwen/Qwen3-0.6B.
+# Install after requirements.txt:
+#   pip install -r requirements-llm.txt
+#
+# The first answer downloads ~1.5 GB of model weights. Without these packages
+# (or without a model cache) the backend automatically uses deterministic
+# fact-based answers from SQLite.
+transformers>=4.51,<5
+torch>=2.4
+accelerate>=1.0
+safetensors>=0.4
